@@ -82,35 +82,41 @@
   })();
 
   /* ---------- leaderboard matrix ---------- */
-  const DATASETS = {
-    finetuned: { rows: FINE_TUNED_RESULTS, frontier: FRONTIER_REFERENCE, footnote: "Fine-tuned via LoRA on the AutoGraphQL training corpus (Settings A: lr 1e-4, B: lr 5e-5; r=16, α=32, 3 epochs). Claude Sonnet 4.5 is shown as an unranked frontier reference — evaluated 2-shot, not fine-tuned on this benchmark." },
-    baseline: { rows: BASELINE_RESULTS, frontier: null, footnote: "Out-of-the-box 2-shot performance, before any fine-tuning on AutoGraphQL-generated data." },
-  };
+  const MEDALS = ["🥇", "🥈", "🥉"];
 
   let sortKey = "overall";
   let sortDir = "desc";
-  let activeSet = "finetuned";
+  let sizeTab = "all";
+  let detailed = false;
 
   const headEl = document.getElementById("matrixHead");
   const bodyEl = document.getElementById("matrixBody");
   const footEl = document.getElementById("matrixFootnote");
+  const detailToggle = document.getElementById("detailToggle");
+  const legendWrap = document.getElementById("legendWrap");
 
   function columnBounds(rows, key) {
     const vals = rows.map((r) => r[key]);
     return { min: Math.min(...vals), max: Math.max(...vals) };
   }
 
+  function currentRows() {
+    if (sizeTab === "all") return LEADERBOARD_ENTRIES;
+    return LEADERBOARD_ENTRIES.filter((r) => r.sizeBucket === sizeTab);
+  }
+
   function renderMatrixHead() {
     const cols = [
       { key: "model", label: "Model" },
-      ...CATEGORY_KEYS.map((k) => ({ key: k, label: CATEGORY_LABELS[k] })),
+      { key: "params", label: "Params" },
+      ...(detailed ? CATEGORY_KEYS.map((k) => ({ key: k, label: CATEGORY_LABELS[k] })) : []),
       { key: "overall", label: "Overall" },
     ];
     headEl.innerHTML =
       `<th>Rank</th>` +
       cols
         .map((c) => {
-          const sortable = c.key !== "model";
+          const sortable = c.key !== "model" && c.key !== "params";
           const sortedClass = sortKey === c.key ? "sorted" : "";
           const arrow = sortKey === c.key ? `<span class="arrow">${sortDir === "desc" ? "▼" : "▲"}</span>` : "";
           return `<th class="${sortedClass}" ${sortable ? `data-key="${c.key}"` : ""}>${c.label}${arrow}</th>`;
@@ -119,8 +125,9 @@
   }
 
   function renderMatrixBody() {
-    const { rows, frontier, footnote } = DATASETS[activeSet];
-    footEl.textContent = footnote;
+    const rows = currentRows();
+    footEl.textContent = "Accuracy is execution-grounded via semantic-equivalence scoring, not exact string match. Fine-tuned settings, baselines, and closed-weight models are all shown as ranked, competing entries.";
+    legendWrap.style.display = detailed ? "flex" : "none";
 
     const sorted = rows.slice().sort((a, b) => {
       const av = a[sortKey], bv = b[sortKey];
@@ -128,33 +135,32 @@
     });
 
     const bounds = {};
-    CATEGORY_KEYS.forEach((k) => (bounds[k] = columnBounds(rows, k)));
+    if (detailed) CATEGORY_KEYS.forEach((k) => (bounds[k] = columnBounds(rows, k)));
 
     function rowHtml(r, rank) {
-      const isFrontier = r.type === "frontier";
-      const cells = CATEGORY_KEYS.map((k) => {
-        const { min, max } = bounds[k];
-        const t = max > min ? (r[k] - min) / (max - min) : 0.5;
-        const bg = isFrontier ? "transparent" : lerpColor(t);
-        const fg = isFrontier ? "var(--ink)" : textColorFor(t);
-        return `<td class="cell" style="background:${bg};color:${fg}">${r[k].toFixed(2)}</td>`;
-      }).join("");
+      const cells = detailed
+        ? CATEGORY_KEYS.map((k) => {
+            const { min, max } = bounds[k];
+            const t = max > min ? (r[k] - min) / (max - min) : 0.5;
+            return `<td class="cell" style="background:${lerpColor(t)};color:${textColorFor(t)}">${r[k].toFixed(2)}</td>`;
+          }).join("")
+        : "";
+      const medal = rank <= 3 ? MEDALS[rank - 1] : rank;
+      const weightBadge = r.weightClass === "closed" ? '<span class="badge-weight closed">closed-weight</span>' : '<span class="badge-weight open">open-weight</span>';
       return `
-        <tr class="${isFrontier ? "frontier" : ""}">
-          <td class="rank">${isFrontier ? "★" : rank}</td>
+        <tr class="${rank <= 3 ? "top top-" + rank : ""}">
+          <td class="rank">${medal}</td>
           <td class="model-cell">
-            <span class="model-name">${r.model}${isFrontier ? '<span class="badge-frontier">reference</span>' : ""}</span>
-            <span class="model-setting">${r.setting} · ${r.params}</span>
+            <span class="model-name">${r.model}</span>
+            <span class="model-setting">${r.setting} ${weightBadge}</span>
           </td>
+          <td class="params-cell">${r.params}</td>
           ${cells}
-          <td class="overall">${r.overall.toFixed(2)}</td>
+          <td class="overall">${r.overall.toFixed(2)}<span class="pct">%</span></td>
         </tr>`;
     }
 
-    let html = "";
-    if (frontier) html += rowHtml(frontier, 0);
-    sorted.forEach((r, i) => (html += rowHtml(r, i + 1)));
-    bodyEl.innerHTML = html;
+    bodyEl.innerHTML = sorted.map((r, i) => rowHtml(r, i + 1)).join("");
   }
 
   function renderMatrix() {
@@ -175,28 +181,32 @@
     renderMatrix();
   });
 
-  document.querySelectorAll(".tab").forEach((btn) => {
+  document.querySelectorAll(".size-tab").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".size-tab").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      activeSet = btn.dataset.set;
-      sortKey = "overall";
-      sortDir = "desc";
+      sizeTab = btn.dataset.size;
       renderMatrix();
     });
+  });
+
+  detailToggle.addEventListener("click", () => {
+    detailed = !detailed;
+    detailToggle.textContent = detailed ? "Hide category breakdown ▲" : "Show category breakdown ▾";
+    renderMatrix();
   });
 
   renderMatrix();
 
   /* ---------- compare / radar chart ---------- */
   const PALETTE = ["#e10098", "#6a3df5", "#f6b93b", "#1f9d6b"];
-  const ALL_MODELS = [FRONTIER_REFERENCE, ...FINE_TUNED_RESULTS, ...BASELINE_RESULTS];
+  const ALL_MODELS = LEADERBOARD_ENTRIES;
 
   const pickerEl = document.getElementById("modelPicker");
   const radarSvg = document.getElementById("radarSvg");
   const legendEl = document.getElementById("radarLegend");
   const MAX_PICKS = 4;
-  let selected = [FRONTIER_REFERENCE.id, "llama-3.1-8b-a"];
+  let selected = ["claude-sonnet-4-5", "llama-3.1-8b-a"];
 
   function renderPicker() {
     pickerEl.innerHTML = ALL_MODELS.map((m) => {

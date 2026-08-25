@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NL2GQL Bench — a leaderboard for GraphQL query generation</title>
-<meta name="description" content="A benchmark and leaderboard for natural-language-to-GraphQL query generation, built on the AutoGraphQL bring-your-own-schema framework." />
+<meta name="description" content="A leaderboard for natural-language-to-GraphQL query generation, built on the AutoGraphQL bring-your-own-schema benchmark." />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -13,32 +13,22 @@
   <div class="wrap">
     <a href="#" class="brand">NL2GQL<span class="dot">·</span>Bench</a>
     <div class="nav-links">
-      <a href="#about">About</a>
-      <a href="#task">The Task</a>
       <a href="#leaderboard">Leaderboard</a>
+      <a href="#submit">Submit</a>
       <a href="#compare">Compare</a>
-      <a href="#dataset">Dataset</a>
+      <a href="#about">About</a>
       <a href="AutoGraphQL.pdf" class="nav-cta">Paper ↗</a>
     </div>
   </div>
 </nav>
 
-<header class="hero">
+<header class="hero hero-compact">
   <div class="hero-graph" id="heroGraph"></div>
   <div class="wrap">
-    <span class="hero-kicker">● hidden benchmark reserved for future submissions</span>
-    <h1>How well can models turn <span class="hl">plain English</span> into a <span class="hl">GraphQL query</span> — on a schema they've never seen?</h1>
-    <p class="lede">
-      NL2GQL Bench tracks progress on schema-grounded natural-language-to-GraphQL generation.
-      Unlike fixed-schema text-to-SQL leaderboards, every instance here comes from a distinct,
-      previously-unseen GraphQL schema — so a high score means a model actually learned to
-      <em>read a schema</em>, not memorize one.
-    </p>
-    <div class="hero-actions">
-      <a href="#leaderboard" class="btn btn-primary">View the leaderboard</a>
-      <a href="#submit" class="btn btn-ghost">Submit your model →</a>
-    </div>
-    <div class="stat-row">
+    <span class="hero-kicker">● 2,100 hidden instances reserved for future submissions</span>
+    <h1>NL2GQL Bench</h1>
+    <p class="lede">The leaderboard for natural-language → GraphQL query generation, across GraphQL schemas models have never seen.</p>
+    <div class="stat-row compact">
       <div class="stat"><div class="n"><span>17,621</span></div><div class="l">NL–GraphQL pairs</div></div>
       <div class="stat"><div class="n"><span>173</span></div><div class="l">distinct schemas</div></div>
       <div class="stat"><div class="n"><span>7</span></div><div class="l">query categories</div></div>
@@ -47,83 +37,26 @@
   </div>
 </header>
 
-<section id="about">
-  <div class="wrap about-grid">
-    <div>
-      <div class="section-head">
-        <div class="eyebrow">Why this benchmark exists</div>
-        <h2>Text-to-SQL has Spider and BIRD. GraphQL has a different problem.</h2>
-      </div>
-      <p>
-        GraphQL adoption is projected to pass 60% of enterprises by 2027, but every organization exposes a
-        <em>different</em> schema — its own types, filters, fragments, and mutations. A model that's great
-        at one company's API says little about the next. This benchmark, built on the
-        <strong>AutoGraphQL</strong> bring-your-own-schema framework, is designed around that reality:
-        cross-schema generalization is the thing being measured, not recall of a fixed database.
-      </p>
-      <p>
-        Each instance is a validated triple — <code>(schema, natural-language query, ground-truth GraphQL
-        query)</code> — synthesized through schema-aware query generation, then checked for both syntactic
-        validity and successful execution before it's admitted to the corpus.
-      </p>
-    </div>
-    <ul class="diff-list">
-      <li><b>Cross-schema, not fixed-schema.</b> <span>173 schemas across 7 domains — every eval instance is an unseen API, not a memorized one.</span></li>
-      <li><b>Construct-level diagnosis.</b> <span>Scores break down across aliases, directives, fragments, filters, pagination, and mutations — not one blended number.</span></li>
-      <li><b>Execution-validated ground truth.</b> <span>Every reference query is schema- and execution-checked, then deduplicated by canonical structure.</span></li>
-      <li><b>A held-out set no one has trained on.</b> <span>2,100 instances are withheld specifically for future leaderboard submissions.</span></li>
-    </ul>
-  </div>
-</section>
-
-<section id="task">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">The task, concretely</div>
-      <h2>Schema in. Plain English in. A valid, executable query out.</h2>
-      <p>An illustrative instance from the corpus — a university-enrollment schema with a natural-language request that requires filtering, pagination, an alias, a conditional directive, a fragment, and a nested traversal all at once.</p>
-    </div>
-    <div class="pipeline">
-      <div class="panel">
-        <div class="panel-label">GraphQL Schema</div>
-        <pre id="exSchema"></pre>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="panel light">
-        <div class="panel-label">Natural Language Query</div>
-        <div class="nl-text" id="exNL"></div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="panel">
-        <div class="panel-label">Ground-Truth GraphQL Query</div>
-        <pre id="exQuery"></pre>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section id="leaderboard">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head slim">
       <div class="eyebrow">Leaderboard</div>
-      <h2>Model × category performance matrix</h2>
-      <p>
-        Cell color shows relative strength within each category (darker = stronger), so you can see
-        <em>which constructs break which models</em> — not just an aggregate rank. Click any column to
-        re-sort. The <strong>Overall</strong> column is the benchmark's headline metric.
-      </p>
+      <h2>Ranked by overall accuracy</h2>
     </div>
 
-    <div class="tabs" role="tablist">
-      <button class="tab active" data-set="finetuned">Fine-tuned models</button>
-      <button class="tab" data-set="baseline">Baseline (2-shot, no fine-tuning)</button>
+    <div class="board-controls">
+      <div class="tabs" role="tablist">
+        <button class="size-tab active" data-size="all">All models</button>
+        <button class="size-tab" data-size="small">Small · &lt;20B</button>
+        <button class="size-tab" data-size="large">Large · ≥20B</button>
+      </div>
+      <button class="detail-toggle" id="detailToggle">Show category breakdown ▾</button>
     </div>
 
-    <div class="matrix-legend">
+    <div class="matrix-legend" id="legendWrap">
       <span>Low</span>
       <span class="legend-scale" id="legendScale"></span>
       <span>High</span>
-      <span style="margin-left:auto">accuracy is execution-grounded, via RGEval-style semantic equivalence — not exact string match</span>
     </div>
 
     <div class="matrix-wrap">
@@ -136,53 +69,9 @@
   </div>
 </section>
 
-<section id="compare">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">Head-to-head</div>
-      <h2>Compare model profiles, not just leaderboard rank</h2>
-      <p>Two models can post similar overall scores for very different reasons. Pick up to four to overlay their category profiles.</p>
-    </div>
-    <div class="compare-shell">
-      <div>
-        <div class="model-picker" id="modelPicker"></div>
-        <p class="pick-hint">Pick up to 4 · profiles are shown as % accuracy per category</p>
-      </div>
-      <div class="radar-panel">
-        <svg id="radarSvg" width="440" height="440" viewBox="0 0 440 440"></svg>
-        <div class="radar-legend" id="radarLegend"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="dataset">
-  <div class="wrap dataset-grid">
-    <div>
-      <div class="section-head">
-        <div class="eyebrow">Dataset</div>
-        <h2>Corpus composition</h2>
-      </div>
-      <div class="split-cards" id="splitCards"></div>
-      <p style="color:var(--ink-soft); font-size:0.88rem;">
-        Query categories per split (train / public benchmark):
-      </p>
-      <div class="bars" id="categoryBars"></div>
-    </div>
-    <div>
-      <div class="section-head">
-        <div class="eyebrow">Coverage</div>
-        <h2>Domain distribution</h2>
-        <p>The 173 source schemas span seven application domains, giving a realistic spread of entity types and query patterns rather than one narrow vertical.</p>
-      </div>
-      <div class="bars" id="domainBars"></div>
-    </div>
-  </div>
-</section>
-
 <section id="submit">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head slim">
       <div class="eyebrow">Get on the board</div>
       <h2>Submitting a result</h2>
       <p>There's no automated submission pipeline yet — the hidden 2,100-instance benchmark is reserved precisely so future submissions mean something. Here's the process for now:</p>
@@ -207,11 +96,112 @@
   </div>
 </section>
 
-<section id="cite">
+<section id="compare">
+  <div class="wrap">
+    <div class="section-head slim">
+      <div class="eyebrow">Head-to-head</div>
+      <h2>Compare model profiles, not just rank</h2>
+      <p>Two models can post similar overall scores for very different reasons. Pick up to four to overlay their category profiles.</p>
+    </div>
+    <div class="compare-shell">
+      <div>
+        <div class="model-picker" id="modelPicker"></div>
+        <p class="pick-hint">Pick up to 4 · profiles are shown as % accuracy per category</p>
+      </div>
+      <div class="radar-panel">
+        <svg id="radarSvg" width="440" height="440" viewBox="0 0 440 440"></svg>
+        <div class="radar-legend" id="radarLegend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="divider-label">More about the benchmark</div></div>
+
+<section id="about" class="section-secondary">
+  <div class="wrap about-grid">
+    <div>
+      <div class="section-head">
+        <div class="eyebrow">Why this benchmark exists</div>
+        <h3>Text-to-SQL has Spider and BIRD. GraphQL has a different problem.</h3>
+      </div>
+      <p>
+        GraphQL adoption is projected to pass 60% of enterprises by 2027, but every organization exposes a
+        <em>different</em> schema — its own types, filters, fragments, and mutations. A model that's great
+        at one company's API says little about the next. This benchmark, built on the
+        <strong>AutoGraphQL</strong> bring-your-own-schema framework, is designed around that reality:
+        cross-schema generalization is the thing being measured, not recall of a fixed database.
+      </p>
+      <p>
+        Each instance is a validated triple — <code>(schema, natural-language query, ground-truth GraphQL
+        query)</code> — synthesized through schema-aware query generation, then checked for both syntactic
+        validity and successful execution before it's admitted to the corpus.
+      </p>
+    </div>
+    <ul class="diff-list">
+      <li><b>Cross-schema, not fixed-schema.</b> <span>173 schemas across 7 domains — every eval instance is an unseen API, not a memorized one.</span></li>
+      <li><b>Construct-level diagnosis.</b> <span>Toggle the leaderboard's category breakdown to see aliases, directives, fragments, filters, pagination, and mutations individually.</span></li>
+      <li><b>Execution-validated ground truth.</b> <span>Every reference query is schema- and execution-checked, then deduplicated by canonical structure.</span></li>
+      <li><b>A held-out set no one has trained on.</b> <span>2,100 instances are withheld specifically for future leaderboard submissions.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="task" class="section-secondary">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">The task, concretely</div>
+      <h3>Schema in. Plain English in. A valid, executable query out.</h3>
+      <p>An illustrative instance from the corpus — a university-enrollment schema with a natural-language request that requires filtering, pagination, an alias, a conditional directive, a fragment, and a nested traversal all at once.</p>
+    </div>
+    <div class="pipeline">
+      <div class="panel">
+        <div class="panel-label">GraphQL Schema</div>
+        <pre id="exSchema"></pre>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="panel light">
+        <div class="panel-label">Natural Language Query</div>
+        <div class="nl-text" id="exNL"></div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="panel">
+        <div class="panel-label">Ground-Truth GraphQL Query</div>
+        <pre id="exQuery"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="dataset" class="section-secondary">
+  <div class="wrap dataset-grid">
+    <div>
+      <div class="section-head">
+        <div class="eyebrow">Dataset</div>
+        <h3>Corpus composition</h3>
+      </div>
+      <div class="split-cards" id="splitCards"></div>
+      <p style="color:var(--ink-soft); font-size:0.88rem;">
+        Query categories per split (train / public benchmark):
+      </p>
+      <div class="bars" id="categoryBars"></div>
+    </div>
+    <div>
+      <div class="section-head">
+        <div class="eyebrow">Coverage</div>
+        <h3>Domain distribution</h3>
+        <p>The 173 source schemas span seven application domains, giving a realistic spread of entity types and query patterns rather than one narrow vertical.</p>
+      </div>
+      <div class="bars" id="domainBars"></div>
+    </div>
+  </div>
+</section>
+
+<section id="cite" class="section-secondary">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Citation</div>
-      <h2>Citing this benchmark</h2>
+      <h3>Citing this benchmark</h3>
     </div>
     <div class="cite-box">This benchmark is built on the AutoGraphQL framework, currently under anonymous review (ACL submission). A formal BibTeX entry will be published here once the paper is out of review — check back, or open an issue if you need a citable reference sooner.</div>
   </div>
