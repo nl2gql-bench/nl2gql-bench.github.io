@@ -430,6 +430,38 @@ table.matrix td.cell { color: var(--ink); font-family: var(--mono); font-size: 0
 .bar-row .val { text-align: right; color: var(--ink-soft); font-family: var(--mono); font-size: 0.78rem; }
 @media (max-width: 860px) { .dataset-grid { grid-template-columns: 1fr; } }
 
+/* ---------- Dataset download panel ---------- */
+.download-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  padding: 6px 20px;
+  margin-bottom: 32px;
+}
+.download-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.download-row:last-of-type { border-bottom: none; }
+.dl-name { font-weight: 600; font-size: 0.92rem; }
+.dl-meta { font-size: 0.8rem; color: var(--ink-soft); margin-top: 2px; }
+.dl-badge {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 7px 14px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dl-badge.pending { color: var(--ink-soft); background: var(--line); }
+.dl-badge.ready { color: #fff; background: var(--pink); }
+.dl-badge.ready:hover { background: var(--pink-deep); }
+
 /* ---------- Submit ---------- */
 .submit-shell {
   display: grid;
