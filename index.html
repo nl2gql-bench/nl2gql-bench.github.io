@@ -85,12 +85,40 @@
       <div class="step">
         <div class="num">02</div>
         <h3>Open a submission issue</h3>
-        <p>Open a GitHub issue with your model name, parameter count, fine-tuning setup, per-category scores, and a link to your code or paper.</p>
+        <p>Use the <strong>Leaderboard Submission</strong> issue template — it walks you through every field below.</p>
+        <a href="https://github.com/manishkesarwani/nl2gql-bench/issues/new?template=leaderboard_submission.yml" class="step-link">Open the template →</a>
       </div>
       <div class="step">
         <div class="num">03</div>
         <h3>Hidden-set verification</h3>
-        <p>For the headline board, we independently run your released model against the 2,100-instance hidden set and publish that number alongside your reported one.</p>
+        <p>Before we post a headline number, we independently score your submission against the 2,100-instance hidden set and publish that number alongside your reported one.</p>
+      </div>
+    </div>
+
+    <div class="submit-details">
+      <div class="submit-col">
+        <h4>What your submission needs</h4>
+        <ul class="check-list">
+          <li><b>Predictions file</b> — one JSON object per public-benchmark instance, keyed by <code>id</code>.</li>
+          <li><b>Model card</b> — name, parameter count (or "undisclosed" for closed APIs), open- or closed-weight, base model + fine-tuning method if adapted.</li>
+          <li><b>Per-category scores</b> — aliases, directives, external fragments, inline fragments, filters, pagination, mutations, plus overall.</li>
+          <li><b>Reproducibility link</b> — code, weights, or paper. Closed models: API name + version pinned at eval time.</li>
+          <li><b>Contact</b> — an email we can reach you at once hidden-set scoring is done.</li>
+        </ul>
+        <div class="callout">
+          Don't include real production schemas, credentials, or internal API packages in anything you submit — score against the public benchmark's own schemas only.
+        </div>
+      </div>
+      <div class="submit-col">
+        <h4>Predictions format</h4>
+        <pre class="code-block">{
+  "model": "your-model-name",
+  "predictions": [
+    { "id": "pub-000418", "query": "query { ... }" },
+    { "id": "pub-000419", "query": "query { ... }" }
+  ]
+}</pre>
+        <p class="fine-print">One entry per public-benchmark <code>id</code>. We run your predictions (or, for the hidden set, your released model/API) through the same execution-grounded scorer used for every other row on the board — no exact-string matching.</p>
       </div>
     </div>
   </div>
